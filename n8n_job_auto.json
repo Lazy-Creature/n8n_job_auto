@@ -1,0 +1,468 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        160
+      ],
+      "id": "1b76d90e-2790-499a-8589-a2249836df47",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://rss.app/feeds/X7JgaXM7QJT1PCWM.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -96
+      ],
+      "id": "14bcb131-6fdb-4c92-8850-1739705a3d09",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "url": "https://www.linkedin.com/jobs/data-science-jobs/?currentJobId=4286653082&originalSubdomain=in",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        -80
+      ],
+      "id": "463eb496-6459-4a7b-8d84-cb5223708b84",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an intelligent parser. \nExtract job details from the provided job listing text/HTML and output in strict JSON format.",
+              "role": "model"
+            },
+            {
+              "content": "=Job source:  {{ $json.data }}"
+            },
+            {
+              "content": "JSON format:\n{\n  \"Company Name\": \"\",\n  \"Benefits\": \"\",        // List separated by commas\n  \"Job Description\": \"\", // Concise summary of key responsibilities/requirements and skills\n  \"Location\": \"\",\n  \"Link\": \"\"\n}\n\nGuidelines:\n- If a field is missing, leave it as \"\".\n- Do not include extra text outside of JSON.\n- Always return valid JSON.",
+              "role": "model"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -80
+      ],
+      "id": "8c65f454-5034-4e88-a47d-068dcf688fd8",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sIOwJ9bRuvoBeZgi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a professional career assistant. \nYou will receive two inputs:\n1. Job details (JSON from previous node)\n2. Candidate resume (JSON from Set node)",
+              "role": "model"
+            },
+            {
+              "content": "=Input Data:  {{ $json.content.parts[0].text }}"
+            },
+            {
+              "content": "=Your tasks:\n- Generate a professional, concise cover letter tailored to this job using the candidate’s resume.\n- Evaluate the candidate’s fit for this job role based on required skills, projects, and experience. \n  Give a \"Match Score\" out of 5 (5 = excellent match).\n- Return all results in strict JSON format.\n\nFinal JSON format:\n{\n  \"Title\": \"\",              // Job Title if available, else leave \"\"\n  \"Job Description\": \"\",    // Summarized job description\n  \"Link\": \"\",               // Job application link\n  \"Date\": \"\",               // Posting date if available\n  \"Rating\": \"\",             // Company rating if available\n  \"Company Name\": \"\",\n  \"Benefits\": \"\",\n  \"Cover Letter\": \"\",\n  \"Match Score\": \"\"         // Score out of 5; example: n/5, where 'n' is the score\n}\n\nRules:\n- Always return valid JSON only.\n- Keep cover letter professional (3–5 short paragraphs).\n- Match Score must be an integer between 1–5.\n",
+              "role": "model"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "1a434469-f356-46c3-a200-193b00cb68c2",
+      "name": "Message a model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sIOwJ9bRuvoBeZgi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1296,
+        0
+      ],
+      "id": "0873f997-d879-4317-98f4-c8cb3d627728",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"Resume\": {\n    \"Summary\": \"Aspiring Data Scientist & Analyst with internship experience in machine learning, data analytics, and data visualization.\",\n    \"Skills\": \"Python, SQL, Power BI, Tableau, Excel, TensorFlow, PyTorch, AWS, Azure, GCP, BigQuery, Hadoop, Spark, Kafka\",\n    \"Projects\": \"Hybrid recommendation system, Bike demand prediction, Airbnb booking analysis, Healthcare dashboards, OCD clustering, World population forecasting\",\n    \"Education\": \"MCA (LPU, ongoing), M.Sc. Electronic Science (CU), B.Sc. Electronics (CU)\",\n    \"Certifications\": \"IIT Guwahati Data Science, Agile Scrum Master, AWS\",\n    \"Languages\": \"English, Hindi, Bengali\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1056,
+        160
+      ],
+      "id": "839fd5a4-a31d-4419-9540-e7c8c0817953",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1MyI9sRjkNGpnPtrg994rnixBKm7WLMzkFtFyndoiRO4",
+          "mode": "list",
+          "cachedResultName": "LinkedIn job listings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MyI9sRjkNGpnPtrg994rnixBKm7WLMzkFtFyndoiRO4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MyI9sRjkNGpnPtrg994rnixBKm7WLMzkFtFyndoiRO4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Link": "={{ $json.Link }}",
+            "Title": "={{ $json.Title }}",
+            "Job Description": "={{ $json[\"Job Description\"] }}",
+            "Date": "={{ $json.Date }}",
+            "Company Name": "={{ $json[\"Company Name\"] }}",
+            "Benefits": "={{ $json.Benefits }}",
+            "Cover Letter": "={{ $json[\"Cover Letter\"] }}",
+            "Match Score": "={{ $json[\"Match Score\"] }}"
+          },
+          "matchingColumns": [
+            "Link"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Description",
+              "displayName": "Job Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Benefits",
+              "displayName": "Benefits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cover Letter",
+              "displayName": "Cover Letter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Match Score",
+              "displayName": "Match Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2048,
+        0
+      ],
+      "id": "0047d887-08c6-4206-b2d9-a397a3f0e307",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PWHLOKI3cgustDec",
+          "name": "Google Sheets account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get raw JSON string from model output\nlet rawText = $json[\"content\"][\"parts\"][0][\"text\"];\n\n// Clean the string (remove newlines and extra spaces)\nrawText = rawText.trim();\n\n// Try parsing it\nlet parsed;\ntry {\n  parsed = JSON.parse(rawText);\n} catch (e) {\n  // If still not valid JSON, wrap as object so n8n doesn't break\n  parsed = { text: rawText };\n}\n\n// Ensure n8n always gets an object\nreturn [\n  {\n    json: parsed\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        0
+      ],
+      "id": "9babe6b7-efa2-4f3b-b442-b6926b49648e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        320,
+        -96
+      ],
+      "id": "f4dc321b-755c-4b67-aa04-134c80a6e0cf",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2576,
+        0
+      ],
+      "id": "d50d0b74-e85c-413d-a092-cc038f0f74f3",
+      "name": "Wait",
+      "webhookId": "1d504ed7-3d09-418e-8b7e-1347b532ade5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ba31ef49-3b28-4e7b-b4b9-e8e5aac52e09",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "586a703507f2a1b68603144edafed8c412d8e84e5019fd2d1a262677ac95e269"
+  },
+  "id": "bzdiiKUetQNFlosn",
+  "tags": []
+}
