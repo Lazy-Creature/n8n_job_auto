@@ -22,5 +22,5 @@ The workflow saves time by reducing repetitive job search tasks and ensures each
 ### 🔹 Run Locally with n8n (Docker)
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-repo/job-automation-n8n.git
-   cd job-automation-n8n
+[   git clone https://github.com/your-repo/job-automation-n8n.git
+   cd job-automation-n8n](https://github.com/Lazy-Creature/n8n_job_auto/tree/main)
