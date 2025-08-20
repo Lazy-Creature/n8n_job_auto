@@ -4,7 +4,7 @@
 This project automates the end-to-end process of job hunting.  
 It fetches job postings from LinkedIn RSS feeds, extracts key job details using **Gemini LLM**, evaluates the candidate’s fit, generates a tailored cover letter, and stores the results in **Google Sheets**.  
 
-The workflow saves time by reducing repetitive job search tasks and ensures each application has a professional, customized cover letter. Optionally, email notifications can be sent for new matches.
+The workflow saves time by reducing repetitive job search tasks and ensures each application has a professional, customized cover letter. 
 
 ---
 
